@@ -4,7 +4,7 @@ import words.core.*;
 
 import java.util.*;
 
-public class Group7Player3 extends Player {
+public class Group7Player4 extends Player {
     // set a max price
     private static final int MAX_BID = 15;
     private Random rand = new Random();
@@ -12,6 +12,8 @@ public class Group7Player3 extends Player {
     private int[] letterFrequency = new int[26];
     private List<Word> wordsSizeBiggerThan7 = new ArrayList<>();
     private Set<Character> vowel = new HashSet<>(Arrays.asList('A', 'E', 'I', 'O', 'U'));
+    private int round;
+    private Set<Character> unwantedLetter = new HashSet<>(Arrays.asList('Z', 'Q', 'J', 'X', 'W', 'K','V'));
 
 
     @Override
@@ -36,6 +38,7 @@ public class Group7Player3 extends Player {
     @Override
     public void startNewRound(SecretState secretstate) {
         super.startNewRound(secretstate);
+        round = 8*numPlayers;
     }
 
     @Override
@@ -48,14 +51,14 @@ public class Group7Player3 extends Player {
 
         // if already has 3 vowels, bid the remaining vowels for 1
         if(vowel.contains(bidLetter.getCharacter()) && myLetters.stream().filter(vowel::contains).count() >= 3){
+            round--;
             return 2;
         }
 
         if (myLetters.stream().filter(ch -> ch == bidLetter.getCharacter()).count() >= 2) {
+            round--;
             return 4;
         }
-
-
 
         int currentScore = secretstate.getScore();
         int letterValue = bidLetter.getValue();
@@ -78,19 +81,55 @@ public class Group7Player3 extends Player {
             bid -= 3;
         }
 
+
+        if(secretstate.getSecretLetters().size() >= 3){
+            if(bidLetter.getCharacter().equals('Z')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('Q')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('J')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('X')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('W')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('K')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('V')){
+                round--;
+                return 2;
+            }else if(bidLetter.getCharacter().equals('Y')){
+                round--;
+                return 2;
+            }
+        }
+
         if(bidLetter.getCharacter().equals('Z')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('Q')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('J')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('X')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('W')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('K')){
+            round--;
             return 3;
         }else if(bidLetter.getCharacter().equals('V')){
+            round--;
             return 3;
         }
 
@@ -98,13 +137,37 @@ public class Group7Player3 extends Player {
         bid = adjustBidBasedOnHistory(bid, bidLetter, playerBidList);
 
 
-        // add some random bid
-        bid += rand.nextInt(2);
+        if(round <= (((8 - secretstate.getSecretLetters().size())*numPlayers) * 0.4)){
+            bid += 2;
+        }else if(round <= (((8 - secretstate.getSecretLetters().size())*numPlayers) * 0.2)){
+            bid += 3;
+        }else{
+            // add some random bid
+            bid += rand.nextInt(2);
+        }
 
         // make sure the bid is within a reasonable range
         bid = Math.min(bid, MAX_BID);
         bid = Math.max(bid, 2); //
 
+        if(secretstate.getSecretLetters().size() == 1){
+            if(secretstate.getSecretLetters().contains(unwantedLetter)){
+                bid += 3;
+            }
+            bid += 1;
+        }else if(secretstate.getSecretLetters().size() == 2){
+            if(secretstate.getSecretLetters().contains(unwantedLetter)){
+                bid += 4;
+            }
+            bid += 2;
+        }else if(secretstate.getSecretLetters().size() >= 3){
+            if(secretstate.getSecretLetters().contains(unwantedLetter)){
+                bid += 5;
+            }
+            bid += 4;
+        }
+
+        round--;
         return bid;
     }
 
@@ -154,5 +217,3 @@ public class Group7Player3 extends Player {
         return true;
     }
 }
-
-

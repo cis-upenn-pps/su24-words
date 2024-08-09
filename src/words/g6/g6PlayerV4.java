@@ -5,7 +5,8 @@ import words.core.*;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class g6PlayerV2 extends Player {
+public class g6PlayerV4 extends Player {
+
 
     /**
      * Method is called when it is this player's turn to submit a bid. They should guarantee that
@@ -30,7 +31,7 @@ public class g6PlayerV2 extends Player {
     private ThreadLocalRandom random;
 
 
-    public g6PlayerV2() {
+    public g6PlayerV4() {
         this.random = ThreadLocalRandom.current();
         this.wordSet = new HashSet<>();
     }
@@ -100,18 +101,52 @@ public class g6PlayerV2 extends Player {
                    int totalRounds, ArrayList<String> playerList,
                    SecretState secretstate, int playerID) {
 
-        List<Character> myLettersHypothetical = new ArrayList<>(this.myLetters);
+        int bidLetterCounter =0;
+
+        List<Character> myLettersHypothetical = new ArrayList<>(myLetters);
 
         char currentbidLetter = bidLetter.getCharacter();
 
-        int myBid = 3;
+        int myBid = 1;
 
         int scoreInThisRound = secretstate.getScore();
 
-        if (scoreInThisRound > 50) {
+        // bids low for the first round of bids or until it has three letters
+
+        if(bidLetterCounter ==0){
             myBid = numPlayers;
+        }
+//
+        if (bidLetterCounter < numPlayers || myLetters.size() <= 3) {
+
+                if(numPlayers >= 4){
+                    myBid = 3;
+                }
+                else{
+                myBid = 6 ;}
 
         }
+
+        ArrayList<Integer>  allBids = new ArrayList<>();
+        ArrayList<Integer> allBidValues = new ArrayList<>();
+        int maxBidValue =5;
+
+        //then it learns from the bids of the other players, and bids highly if it wants the letter
+    //
+        if(bidLetterCounter > numPlayers) {
+            for (int i = 0; i < playerBidList.size(); i++) {
+
+                ArrayList<Integer> bids = playerBidList.get(i).getBidValues();
+
+                for (int j = 0; j < bids.size(); j++) {
+                    allBidValues.add(bids.get(j));
+                }
+            }
+            maxBidValue = Collections.max(allBidValues);
+        }
+
+        System.err.println(allBidValues);
+        System.err.println(maxBidValue);
 
 
         myLettersHypothetical.add(currentbidLetter);
@@ -121,35 +156,23 @@ public class g6PlayerV2 extends Player {
         int scoreHypo = ScrabbleValues.getWordScore(endingWordHypo);
         int scoreNow = ScrabbleValues.getWordScore(endingWord);
 
-        System.err.println("scoreHypo : " + scoreHypo);
-        System.err.println("scoreNow :" + scoreNow);
-
 
         if (scoreHypo > scoreNow) {
 
-            myBid = this.random.nextInt(numPlayers, numPlayers + 3);
-            ; // Slightly higher bid for important letters
+            myBid = Math.min(this.random.nextInt(maxBidValue, maxBidValue+2), 10);
 
         }
 
-        System.err.println("Player bid list size:" +playerBidList.size());
+
         if (scoreNow > 50) {
-            myBid = 1;
+            myBid = 0;
         }
-
-        if(scoreInThisRound <25){
-            myBid = 1;
-        }
-
-        //int charCount = Collections.frequency(myLetters, currentbidLetter);
-
-        //if (charCount >= 2) {
-          //  myBid = 2;
-
-        //}
+        bidLetterCounter ++;
         return myBid;
 
 
 
     }
+
+
 }
